@@ -13,7 +13,7 @@ export default function ScriptGuidelinesTab() {
         {/* Main Columns */}
         <div className="guidelines-main">
           {/* Section 1: What is safe */}
-          <div className="guideline-card" style={{ borderTop: '4px solid var(--color-dark-pine)' }}>
+          <div className="guideline-card" style={{ borderTop: '4px solid var(--color-dark-pine)', boxShadow: '0 0 25px 8px rgba(46, 204, 113, 0.25), var(--shadow-sm)' }}>
             <h3>
               <ShieldCheck size={20} style={{ color: 'var(--color-dark-pine)' }} />
               <span>What is SAFE to share early on</span>
@@ -50,7 +50,7 @@ export default function ScriptGuidelinesTab() {
           </div>
 
           {/* Section 2: What to hold back */}
-          <div className="guideline-card" style={{ borderTop: '4px solid #B22222' }}>
+          <div className="guideline-card" style={{ borderTop: '4px solid #B22222', boxShadow: '0 0 25px 8px rgba(178, 58, 72, 0.25), var(--shadow-sm)' }}>
             <h3>
               <EyeOff size={20} style={{ color: '#B22222' }} />
               <span>What to HOLD BACK (until formal engagement)</span>
@@ -88,7 +88,7 @@ export default function ScriptGuidelinesTab() {
         </div>
 
         {/* Sidebar Cards */}
-        <div className="guidelines-sidebar">
+        <div className="guidelines-sidebar" style={{ boxShadow: '0 2px 8px rgba(203, 187, 160, 0.25), 0 0 18px 6px rgba(225, 219, 201, 0.20), var(--shadow-sm)' }}>
           <h4 style={{ fontSize: '16px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertTriangle size={18} style={{ color: 'var(--color-earth-brown)' }} />
             <span>Consultation Tips</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, User, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, User, Sparkles, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 
 export default function MainChatTab({
   cases,
@@ -205,69 +205,71 @@ We recommend engaging a local advocate to evaluate your case options. Let's find
           </div>
 
           {/* Messages */}
-          <div className="chat-messages">
-            <div className="chat-messages-container">
-              <div className="chat-welcome-banner">
-                <div className="welcome-banner-icon">🛡️</div>
-                <div className="welcome-banner-content">
-                  <h5>Confidential Consultation Session</h5>
-                  <p>
-                    Your legal matter details are evaluated securely under Pakistani law. Please describe your situation in detail. Take your time to gather your facts.
-                  </p>
+          <div className="chat-messages-wrapper">
+            <div className="chat-messages">
+              <div className="chat-messages-container">
+                <div className="chat-welcome-banner">
+                  <div className="welcome-banner-icon"><Shield size={22} /></div>
+                  <div className="welcome-banner-content">
+                    <h5>Confidential Consultation Session</h5>
+                    <p>
+                      Your legal matter details are evaluated securely under Pakistani law. Please describe your situation in detail. Take your time to gather your facts.
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {activeChats.length > 0 ? (
-                activeChats.map((msg, index) => {
-                  const isUser = msg.sender === 'user';
-                  return (
-                    <div key={msg.id || `msg-${index}`} className={`message-bubble ${isUser ? 'user' : 'assistant'}`}>
-                      <div className="message-avatar">
-                        {isUser ? <User size={16} /> : <Sparkles size={16} />}
+                {activeChats.length > 0 ? (
+                  activeChats.map((msg, index) => {
+                    const isUser = msg.sender === 'user';
+                    return (
+                      <div key={msg.id || `msg-${index}`} className={`message-bubble ${isUser ? 'user' : 'assistant'}`}>
+                        <div className="message-avatar">
+                          {isUser ? <User size={16} /> : <Sparkles size={16} />}
+                        </div>
+                        <div className="message-text-wrapper">
+                          <div className="message-text">{msg.text}</div>
+                          <span className="message-time">{msg.time}</span>
+                        </div>
                       </div>
-                      <div className="message-text-wrapper">
-                        <div className="message-text">{msg.text}</div>
-                        <span className="message-time">{msg.time}</span>
-                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-slate-blue-grey)' }}>
+                    <p style={{ fontSize: '14.5px', fontStyle: 'italic' }}>No messages in this chat yet. Type a question below to begin your consultation.</p>
+                  </div>
+                )}
+
+                {isTyping && (
+                  <div className="message-bubble assistant">
+                    <div className="message-avatar">
+                      <Sparkles size={16} />
                     </div>
-                  );
-                })
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-slate-blue-grey)' }}>
-                  <p style={{ fontSize: '14.5px', fontStyle: 'italic' }}>No messages in this chat yet. Type a question below to begin your consultation.</p>
-                </div>
-              )}
-
-              {isTyping && (
-                <div className="message-bubble assistant">
-                  <div className="message-avatar">
-                    <Sparkles size={16} />
+                    <div className="typing-indicator">
+                      <div className="typing-dot"></div>
+                      <div className="typing-dot"></div>
+                      <div className="typing-dot"></div>
+                    </div>
                   </div>
-                  <div className="typing-indicator">
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Find a Lawyer Button after assistant responses */}
-              {showFinderCta && (
-                <div className="find-lawyer-cta-box">
-                  <div className="find-lawyer-cta-text">
-                    <h5>Professional Consultation Recommended</h5>
-                    <p>Matches found for a local {activeCase.type} advocate based on your query.</p>
+                {/* Find a Lawyer Button after assistant responses */}
+                {showFinderCta && (
+                  <div className="find-lawyer-cta-box">
+                    <div className="find-lawyer-cta-text">
+                      <h5>Professional Consultation Recommended</h5>
+                      <p>Matches found for a local {activeCase.type} advocate based on your query.</p>
+                    </div>
+                    <button
+                      className="btn-pine"
+                      onClick={() => onFindLawyer(activeCase)}
+                    >
+                      Find a Lawyer for This Case
+                    </button>
                   </div>
-                  <button
-                    className="btn-pine"
-                    onClick={() => onFindLawyer(activeCase)}
-                  >
-                    Find a Lawyer for This Case
-                  </button>
-                </div>
-              )}
+                )}
 
-              <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} />
+              </div>
             </div>
           </div>
 

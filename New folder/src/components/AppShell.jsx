@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, ChevronDown, ChevronRight, Plus, LogOut, MessageSquare, Scale, BookOpen, User, Sparkles, FolderOpen } from 'lucide-react';
 import Logo from './Logo';
 
@@ -15,10 +15,15 @@ export default function AppShell({
   children
 }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [expandedCaseIds, setExpandedCaseIds] = useState({});
+  const [expandedCaseId, setExpandedCaseId] = useState(activeCaseId);
+
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [newCaseTitle, setNewCaseTitle] = useState('');
   const [newCaseType, setNewCaseType] = useState('Civil');
+
+  useEffect(() => {
+    setExpandedCaseId(activeCaseId);
+  }, [activeCaseId]);
 
   const navItems = [
     { id: 'chat', label: 'AI Consultation', icon: MessageSquare },
@@ -34,14 +39,12 @@ export default function AppShell({
   const handleCaseSelect = (caseId) => {
     onSelectCase(caseId);
     setCurrentTab('chat');
+    setExpandedCaseId(prev => prev === caseId ? null : caseId);
   };
 
   const toggleCaseSummary = (caseId, e) => {
     e.stopPropagation();
-    setExpandedCaseIds(prev => ({
-      ...prev,
-      [caseId]: !prev[caseId]
-    }));
+    setExpandedCaseId(prev => prev === caseId ? null : caseId);
   };
 
   const handleCreateCaseSubmit = (e) => {
@@ -131,22 +134,24 @@ export default function AppShell({
             <Logo size={32} showText={true} />
           </div>
         </div>
-        <nav className="header-nav">
-          {navItems.map((item) => {
-            const IconComponent = item.icon;
-            const isActive = currentTab === item.id;
-            return (
-              <div
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`header-nav-item ${isActive ? 'active' : ''}`}
-              >
-                <IconComponent size={18} />
-                <span>{item.label}</span>
-              </div>
-            );
-          })}
-        </nav>
+        <div className="header-right-group">
+          <nav className="header-nav">
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              const isActive = currentTab === item.id;
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`header-nav-item ${isActive ? 'active' : ''}`}
+                >
+                  <IconComponent size={18} />
+                  <span>{item.label}</span>
+                </div>
+              );
+            })}
+          </nav>
+        </div>
       </header>
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -154,7 +159,7 @@ export default function AppShell({
         <aside className={`app-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-logo" style={{ display: isSidebarCollapsed ? 'none' : 'flex' }}>
             <FolderOpen size={20} style={{ color: 'var(--color-beige-sand)' }} />
-            <span style={{ color: 'var(--color-white)', fontWeight: 700, fontSize: '15px', letterSpacing: '0.5px' }}>CASE EVENT LOGS</span>
+            <span style={{ color: '#E1DBC9', fontWeight: 700, fontSize: '15px', letterSpacing: '0.5px' }}>CASE EVENT LOGS</span>
           </div>
 
           {/* New Case Section */}
@@ -241,7 +246,7 @@ export default function AppShell({
           <div className="sidebar-cases-container">
             {cases.map((c) => {
               const isActive = c.id === activeCaseId;
-              const isSummaryExpanded = !!expandedCaseIds[c.id];
+              const isSummaryExpanded = expandedCaseId === c.id;
               const summaryItems = getAiSummaryForCase(c);
               const initials = c.title.substring(0, 2).toUpperCase();
 
@@ -294,19 +299,19 @@ export default function AppShell({
                     </button>
                   </div>
 
-                  {isSummaryExpanded && (
-                    <div className="case-summary-accordion">
-                      <div className="summary-title">
-                        <Sparkles size={10} style={{ marginRight: '4px' }} />
-                        AI Event Log Summary
-                      </div>
-                      <ul className="summary-list">
-                        {summaryItems.map((item, idx) => (
-                          <li key={idx} className="summary-item">{item}</li>
-                        ))}
-                      </ul>
+                  <div
+                    className={`case-summary-accordion ${isSummaryExpanded ? 'expanded' : ''}`}
+                  >
+                    <div className="summary-title">
+                      <Sparkles size={10} style={{ marginRight: '4px' }} />
+                      AI Event Log Summary
                     </div>
-                  )}
+                    <ul className="summary-list">
+                      {summaryItems.map((item, idx) => (
+                        <li key={idx} className="summary-item">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               );
             })}
@@ -328,7 +333,7 @@ export default function AppShell({
                 onClick={() => isSidebarCollapsed && setCurrentTab('profile')}
                 style={{ cursor: isSidebarCollapsed ? 'pointer' : 'default' }}
               >
-                {getInitials(userProfile.name)}
+                MH
               </div>
             )}
             {!isSidebarCollapsed && (

@@ -23,7 +23,7 @@ export default function Logo({ size = 48, showText = false, textClass = '' }) {
               fontSize: '18px',
               fontWeight: 'bold',
               letterSpacing: '2px',
-              color: 'var(--color-logo-title, #5E4B3B)'
+              color: 'var(--color-logo-title, #4E342E)'
             }}
           >
             LEGAL

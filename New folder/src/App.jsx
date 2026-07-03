@@ -100,7 +100,7 @@ export default function App() {
 
   // Tab & Case States
   const [currentTab, setCurrentTab] = useState('chat');
-  
+
   const [cases, setCases] = useState(() => {
     const saved = localStorage.getItem('lm_cases');
     return saved ? JSON.parse(saved) : INITIAL_CASES;
