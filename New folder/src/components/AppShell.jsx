@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, ChevronDown, ChevronRight, Plus, LogOut, MessageSquare, Scale, BookOpen, User, Sparkles, FolderOpen } from 'lucide-react';
+import { Menu, ChevronDown, ChevronRight, Plus, LogOut, MessageSquare, Scale, BookOpen, User, Sparkles, FolderOpen, Sun, Moon } from 'lucide-react';
 import Logo from './Logo';
+
+const STATUS_MAP = {
+  Active: "Active AI Analysis",
+  Consulting: "Pending Review",
+  Closed: "Draft Prepared"
+};
 
 export default function AppShell({
   currentTab,
@@ -12,6 +18,8 @@ export default function AppShell({
   onSelectCase,
   chats,
   onCreateCase,
+  darkMode,
+  toggleDarkMode,
   children
 }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -109,7 +117,7 @@ export default function AppShell({
       uniqueAdvice.forEach(item => events.push(`Advice: ${item}`));
     }
 
-    events.push(`Status: ${caseObj.status}`);
+    events.push(`Status: ${STATUS_MAP[caseObj.status] || caseObj.status}`);
     return events;
   };
 
@@ -151,6 +159,11 @@ export default function AppShell({
               );
             })}
           </nav>
+          <div className="header-right">
+            <button className="theme-toggle-btn" onClick={toggleDarkMode} title="Toggle Theme">
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -284,10 +297,12 @@ export default function AppShell({
                   <div className="case-main-clickable" onClick={() => handleCaseSelect(c.id)}>
                     <div className="case-text-details">
                       <span className="case-title-txt">{c.title}</span>
-                      <div className="case-meta-txt">
+                      <div className="case-meta-txt" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
                         <span>{c.type}</span>
                         <span>•</span>
-                        <span>{c.date}</span>
+                        <span className={`badge-status-sidebar ${c.status.toLowerCase()}`}>
+                          {STATUS_MAP[c.status] || c.status}
+                        </span>
                       </div>
                     </div>
                     <button

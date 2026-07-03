@@ -118,9 +118,21 @@ export default function LawyerFinderTab({
   const [filterCity, setFilterCity] = useState(userCity || 'Any');
   const [filterGender, setFilterGender] = useState('Any');
 
+  // Loading state for skeleton matches
+  const [isLoading, setIsLoading] = useState(true);
+
   // Draft Message Flow States
   const [activeDraftLawyerId, setActiveDraftLawyerId] = useState(null);
   const [draftText, setDraftText] = useState('');
+
+  // Trigger loading skeleton when search parameters change
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [filterType, filterExp, filterRep, filterCity, filterGender]);
 
   // Handle prefilled filters passed from Main Chat Tab
   useEffect(() => {
@@ -329,101 +341,129 @@ Client at Legal Mind (${userCity || 'Lahore'})`;
             </div>
 
             <div className="suggested-grid">
-              {finalSuggestions.map((lawyer) => (
-                <div
-                  key={`suggest-${lawyer.id}`}
-                  className="lawyer-card"
-                  style={{ borderLeft: '4px solid var(--color-dark-pine)', background: 'var(--color-white)' }}
-                >
-                  <div className="lawyer-card-profile">
-                    <div className="lawyer-photo-placeholder" style={{ background: 'var(--color-dark-pine-light)', color: 'var(--color-dark-pine)' }}>
-                      {lawyer.initials}
-                    </div>
-                    <div className="lawyer-details">
-                      <h4 className="lawyer-name">{lawyer.name}</h4>
-                      <div className="lawyer-exp-reputation">
-                        <span>{lawyer.experience}</span>
-                        {renderStars(lawyer.reputation)}
-                      </div>
-                      <div className="lawyer-specializations">
-                        {lawyer.specializations.map((spec) => (
-                          <span key={spec} className="spec-tag">{spec}</span>
-                        ))}
+              {isLoading ? (
+                [1, 2].map((n) => (
+                  <div
+                    key={`suggest-skeleton-${n}`}
+                    className="lawyer-card skeleton-card"
+                    style={{ borderLeft: '4px solid var(--color-dark-pine)', background: 'var(--color-white)' }}
+                  >
+                    <div className="lawyer-card-profile" style={{ display: 'flex', gap: '16px' }}>
+                      <div className="skeleton-pulse skeleton-circle" style={{ width: '48px', height: '48px', borderRadius: '50%' }}></div>
+                      <div className="lawyer-details" style={{ flex: 1 }}>
+                        <div className="skeleton-pulse skeleton-title" style={{ height: '18px', width: '150px', marginBottom: '8px' }}></div>
+                        <div className="skeleton-pulse skeleton-text" style={{ height: '12px', width: '100px', marginBottom: '8px' }}></div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <div className="skeleton-pulse" style={{ height: '18px', width: '60px', borderRadius: '4px' }}></div>
+                          <div className="skeleton-pulse" style={{ height: '18px', width: '70px', borderRadius: '4px' }}></div>
+                        </div>
                       </div>
                     </div>
+                    <div className="skeleton-pulse skeleton-text" style={{ height: '14px', width: '90%', marginTop: '16px', marginBottom: '12px' }}></div>
+                    <div className="skeleton-pulse skeleton-text short" style={{ height: '12px', width: '80px', marginBottom: '16px' }}></div>
+                    <div className="lawyer-actions" style={{ display: 'flex', gap: '8px' }}>
+                      <div className="skeleton-pulse skeleton-button" style={{ height: '32px', flex: 1, borderRadius: '4px' }}></div>
+                      <div className="skeleton-pulse skeleton-button" style={{ height: '32px', flex: 1, borderRadius: '4px' }}></div>
+                    </div>
                   </div>
-
-                  <div className="suggested-reason-bubble">
-                    💡 {lawyer.whySuggested}
-                  </div>
-
-                  <div className="lawyer-city-info">
-                    <span>📍 {lawyer.city}</span>
-                  </div>
-
-                  {activeDraftLawyerId === lawyer.id ? (
-                    <div className="message-flow-container">
-                      <div className="message-flow-header">
-                        <FileText size={16} />
-                        <span>Consultation Draft Message</span>
+                ))
+              ) : (
+                finalSuggestions.map((lawyer) => (
+                  <div
+                    key={`suggest-${lawyer.id}`}
+                    className="lawyer-card"
+                    style={{ borderLeft: '4px solid var(--color-dark-pine)', background: 'var(--color-white)' }}
+                  >
+                    <div className="lawyer-card-profile">
+                      <div className="lawyer-photo-placeholder" style={{ background: 'var(--color-dark-pine-light)', color: 'var(--color-dark-pine)' }}>
+                        {lawyer.initials}
                       </div>
-                      <textarea
-                        className="message-textarea"
-                        value={draftText}
-                        onChange={(e) => setDraftText(e.target.value)}
-                      />
-                      <div className="message-flow-footer">
+                      <div className="lawyer-details">
+                        <h4 className="lawyer-name">{lawyer.name}</h4>
+                        <div className="lawyer-exp-reputation">
+                          <span>{lawyer.experience}</span>
+                          {renderStars(lawyer.reputation)}
+                        </div>
+                        <div className="lawyer-specializations">
+                          {lawyer.specializations.map((spec) => (
+                            <span key={spec} className="spec-tag">{spec}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="suggested-reason-bubble">
+                      💡 {lawyer.whySuggested}
+                    </div>
+
+                    <div className="lawyer-city-info">
+                      <span>📍 {lawyer.city}</span>
+                    </div>
+
+                    {activeDraftLawyerId === lawyer.id ? (
+                      <div className="message-flow-container">
+                        <div className="message-flow-header">
+                          <FileText size={16} />
+                          <span>Consultation Draft Message</span>
+                        </div>
+                        <textarea
+                          className="message-textarea"
+                          value={draftText}
+                          onChange={(e) => setDraftText(e.target.value)}
+                        />
+                        <div className="message-flow-footer">
+                          <button
+                            className="btn-primary"
+                            onClick={() => saveAndUseMessage(lawyer.email, lawyer.whatsapp)}
+                            style={{ width: '100%', fontSize: '12px', padding: '10px' }}
+                          >
+                            Save & Use This Message
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="draft-btn-container">
                         <button
-                          className="btn-primary"
-                          onClick={() => saveAndUseMessage(lawyer.email, lawyer.whatsapp)}
-                          style={{ width: '100%', fontSize: '12px', padding: '10px' }}
+                          className="btn-draft"
+                          onClick={() => startDraftFlow(lawyer)}
                         >
-                          Save & Use This Message
+                          <MessageSquare size={14} />
+                          <span>Draft Message for {lawyer.name.split(' ')[1]}</span>
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="draft-btn-container">
-                      <button
-                        className="btn-draft"
-                        onClick={() => startDraftFlow(lawyer)}
-                      >
-                        <MessageSquare size={14} />
-                        <span>Draft Message for {lawyer.name.split(' ')[1]}</span>
-                      </button>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="lawyer-actions">
-                    <a
-                      href={`mailto:${lawyer.email}`}
-                      className="btn-action-icon email"
-                      onClick={() => triggerToast(`Opening mail client to ${lawyer.email}`)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      ✉️ Email
-                    </a>
-                    <a
-                      href={`https://wa.me/${lawyer.whatsapp.replace('+', '')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-action-icon whatsapp"
-                      onClick={() => triggerToast(`Redirecting to WhatsApp: ${lawyer.whatsapp}`)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      💬 WhatsApp
-                    </a>
-                    <a
-                      href={`tel:${lawyer.phone}`}
-                      className="btn-action-icon call"
-                      onClick={() => triggerToast(`Dialing: ${lawyer.phone}`)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      📞 Call
-                    </a>
+                    <div className="lawyer-actions">
+                      <a
+                        href={`mailto:${lawyer.email}`}
+                        className="btn-action-icon email"
+                        onClick={() => triggerToast(`Opening mail client to ${lawyer.email}`)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        ✉️ Email
+                      </a>
+                      <a
+                        href={`https://wa.me/${lawyer.whatsapp.replace('+', '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-action-icon whatsapp"
+                        onClick={() => triggerToast(`Redirecting to WhatsApp: ${lawyer.whatsapp}`)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        💬 WhatsApp
+                      </a>
+                      <a
+                        href={`tel:${lawyer.phone}`}
+                        className="btn-action-icon call"
+                        onClick={() => triggerToast(`Dialing: ${lawyer.phone}`)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        📞 Call
+                      </a>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -431,10 +471,38 @@ Client at Legal Mind (${userCity || 'Lahore'})`;
         {/* Regular Directory List */}
         <div>
           <h3 className="brand-font" style={{ fontSize: '20px', marginBottom: '16px', color: '#5E4B3B' }}>
-            Lawyer Directory ({filteredLawyers.length})
+            {isLoading ? "Searching Lawyer Directory..." : `Lawyer Directory (${filteredLawyers.length})`}
           </h3>
 
-          {filteredLawyers.length > 0 ? (
+          {isLoading ? (
+            <div className="lawyers-grid">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={`dir-skeleton-${n}`}
+                  className="lawyer-card skeleton-card"
+                  style={{ borderLeft: '4px solid var(--color-border)', background: 'var(--color-white)' }}
+                >
+                  <div className="lawyer-card-profile" style={{ display: 'flex', gap: '16px' }}>
+                    <div className="skeleton-pulse skeleton-circle" style={{ width: '48px', height: '48px', borderRadius: '50%' }}></div>
+                    <div className="lawyer-details" style={{ flex: 1 }}>
+                      <div className="skeleton-pulse skeleton-title" style={{ height: '18px', width: '150px', marginBottom: '8px' }}></div>
+                      <div className="skeleton-pulse skeleton-text" style={{ height: '12px', width: '100px', marginBottom: '8px' }}></div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <div className="skeleton-pulse" style={{ height: '18px', width: '60px', borderRadius: '4px' }}></div>
+                        <div className="skeleton-pulse" style={{ height: '18px', width: '70px', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="skeleton-pulse skeleton-text" style={{ height: '14px', width: '90%', marginTop: '16px', marginBottom: '12px' }}></div>
+                  <div className="skeleton-pulse skeleton-text short" style={{ height: '12px', width: '80px', marginBottom: '16px' }}></div>
+                  <div className="lawyer-actions" style={{ display: 'flex', gap: '8px' }}>
+                    <div className="skeleton-pulse skeleton-button" style={{ height: '32px', flex: 1, borderRadius: '4px' }}></div>
+                    <div className="skeleton-pulse skeleton-button" style={{ height: '32px', flex: 1, borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredLawyers.length > 0 ? (
             <div className="lawyers-grid">
               {filteredLawyers.map((lawyer) => (
                 <div key={lawyer.id} className="lawyer-card">

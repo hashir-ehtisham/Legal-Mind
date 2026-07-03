@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, LogOut, Save, MapPin } from 'lucide-react';
+import nationalAssemblyLogo from '../assets/national_assembly_logo.png';
+import pakistanCodeLogo from '../assets/pakistan_code_logo.png';
 
 const PAKISTANI_CITIES = [
   "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Quetta", "Sialkot", "Gujranwala", "Hyderabad"
@@ -9,6 +11,14 @@ export default function ProfileTab({ userProfile, setUserProfile, onSignOut, tri
   const [name, setName] = useState(userProfile.name);
   const [city, setCity] = useState(userProfile.city || '');
   const [avatar, setAvatar] = useState(userProfile.avatar || null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -39,6 +49,38 @@ export default function ProfileTab({ userProfile, setUserProfile, onSignOut, tri
     if (!nameStr) return 'U';
     return nameStr.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
+
+  if (isLoading) {
+    return (
+      <div className="tab-panel">
+        <div className="tab-header">
+          <h2 className="tab-title">Your Profile</h2>
+          <p className="tab-subtitle">Manage your personal information and locale settings.</p>
+        </div>
+
+        <div className="profile-card">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+            <div className="skeleton-pulse skeleton-circle" style={{ width: '100px', height: '100px', marginBottom: '12px', borderRadius: '50%' }}></div>
+            <div className="skeleton-pulse skeleton-text" style={{ height: '12px', width: '150px', borderRadius: '4px' }}></div>
+          </div>
+          <div className="profile-fields" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="profile-field-group">
+              <div className="skeleton-pulse" style={{ height: '14px', width: '80px', marginBottom: '8px', borderRadius: '4px' }}></div>
+              <div className="skeleton-pulse" style={{ height: '40px', width: '100%', borderRadius: '8px' }}></div>
+            </div>
+            <div className="profile-field-group">
+              <div className="skeleton-pulse" style={{ height: '14px', width: '80px', marginBottom: '8px', borderRadius: '4px' }}></div>
+              <div className="skeleton-pulse" style={{ height: '40px', width: '100%', borderRadius: '8px' }}></div>
+            </div>
+          </div>
+          <div className="profile-actions" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
+            <div className="skeleton-pulse skeleton-button" style={{ height: '38px', width: '100px', borderRadius: '4px' }}></div>
+            <div className="skeleton-pulse skeleton-button" style={{ height: '38px', width: '130px', borderRadius: '4px' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tab-panel">
@@ -129,6 +171,38 @@ export default function ProfileTab({ userProfile, setUserProfile, onSignOut, tri
             </button>
           </div>
         </form>
+      </div>
+
+      {/* AI Authenticity and Data Sources Section */}
+      <div className="profile-card" style={{ marginTop: '24px', padding: '24px 28px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-earth-brown)', marginBottom: '12px', fontFamily: 'var(--font-serif)', letterSpacing: '0.5px' }}>
+          AI Authenticity & Legal Grounding
+        </h3>
+        <p style={{ fontSize: '14px', color: 'var(--color-charcoal-grey-light)', lineHeight: '1.6', marginBottom: '20px' }}>
+          Legal Mind AI is calibrated directly against official government database systems and legislative records. Every case recommendation and analysis quotes specific legal citations to ensure maximum accuracy:
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--color-beige-sand-light)', padding: '16px', borderRadius: '10px', border: '1px solid var(--color-border)' }} className="authenticity-source-box">
+            <img src={nationalAssemblyLogo} alt="National Assembly of Pakistan" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
+            <div>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>National Assembly of Pakistan (na.gov.pk)</h4>
+              <p style={{ fontSize: '12px', color: 'var(--color-charcoal-grey-light)', margin: '4px 0 0' }}>
+                Indexes parliamentary acts, statutory bills, and constitutional amendments directly passed by the Parliament.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'var(--color-beige-sand-light)', padding: '16px', borderRadius: '10px', border: '1px solid var(--color-border)' }} className="authenticity-source-box">
+            <img src={pakistanCodeLogo} alt="Pakistan Code" style={{ height: '52px', width: 'auto', objectFit: 'contain' }} />
+            <div>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, margin: 0 }}>Pakistan Code Portal (pakistancode.gov.pk)</h4>
+              <p style={{ fontSize: '12px', color: 'var(--color-charcoal-grey-light)', margin: '4px 0 0' }}>
+                Grounds AI logic in official compiled federal laws published by the Ministry of Law and Justice.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

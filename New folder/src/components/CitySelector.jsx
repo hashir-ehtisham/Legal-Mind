@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
 
 const PAKISTANI_CITIES = [
@@ -18,6 +18,15 @@ const PAKISTANI_CITIES = [
 export default function CitySelector({ onCitySaved }) {
   const [search, setSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const filteredCities = PAKISTANI_CITIES.filter(city =>
     city.toLowerCase().includes(search.toLowerCase())
@@ -37,7 +46,7 @@ export default function CitySelector({ onCitySaved }) {
           <h3>Select Your City</h3>
         </div>
         <div className="modal-body" style={{ padding: '24px 28px' }}>
-          <p className="modal-text" style={{ fontSize: '14.5px', color: '#5A5A5A', marginBottom: '12px', lineHeight: '1.5' }}>
+          <p className="modal-text" style={{ fontSize: '14.5px', color: 'var(--color-charcoal-grey-light)', marginBottom: '12px', lineHeight: '1.5' }}>
             To connect you with localized lawyers and apply regional Pakistani regulations, please select your primary city:
           </p>
 
@@ -53,7 +62,21 @@ export default function CitySelector({ onCitySaved }) {
           </div>
 
           <div className="city-list">
-            {filteredCities.length > 0 ? (
+            {isLoading ? (
+              [1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="skeleton-pulse"
+                  style={{
+                    height: '42px',
+                    width: '100%',
+                    marginBottom: '8px',
+                    borderRadius: '8px',
+                    display: 'block'
+                  }}
+                ></div>
+              ))
+            ) : filteredCities.length > 0 ? (
               filteredCities.map((city) => (
                 <div
                   key={city}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import LoginScreen from './components/LoginScreen';
+import LandingPage from './components/LandingPage';
 import DisclaimerModal from './components/DisclaimerModal';
 import CitySelector from './components/CitySelector';
 import AppShell from './components/AppShell';
@@ -80,6 +80,20 @@ const INITIAL_CHATS = {
 };
 
 export default function App() {
+  // Theme state
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('lm_darkMode') === 'true';
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem('lm_darkMode', darkMode);
+  }, [darkMode]);
+
   // Authentication & First-Login States
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('lm_isLoggedIn') === 'true';
@@ -239,7 +253,11 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <>
-        <LoginScreen onLoginSuccess={() => setIsLoggedIn(true)} />
+        <LandingPage
+          onLoginSuccess={() => setIsLoggedIn(true)}
+          darkMode={darkMode}
+          toggleDarkMode={() => setDarkMode(!darkMode)}
+        />
         {toast.show && <div className="toast-notification">{toast.message}</div>}
       </>
     );
@@ -289,6 +307,7 @@ export default function App() {
               setActiveCaseId(id);
               setCurrentTab('chat');
             }}
+            onCreateCase={handleCreateCase}
           />
         );
       case 'finder':
@@ -335,6 +354,8 @@ export default function App() {
         onSelectCase={setActiveCaseId}
         chats={chats}
         onCreateCase={handleCreateCase}
+        darkMode={darkMode}
+        toggleDarkMode={() => setDarkMode(!darkMode)}
       >
         {renderActiveTab()}
       </AppShell>
