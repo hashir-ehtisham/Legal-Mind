@@ -10,6 +10,7 @@ import scalesOutline from '../assets/scales_outline.png';
 import postageStamps from '../assets/postage_stamps.png';
 import nationalAssemblyLogo from '../assets/national_assembly_logo.png';
 import pakistanCodeLogo from '../assets/pakistan_code_logo.png';
+import lawScaleImg from '../assets/close-up-law-scale.jpg';
 
 // Preset Questions for AI Sandbox
 const PRESETS = [
@@ -219,20 +220,6 @@ export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }
             </button>
           </div>
 
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-number">10K+</span>
-              <span className="stat-label">AI Consultations</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">500+</span>
-              <span className="stat-label">Verified Attorneys</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Private & Confidential</span>
-            </div>
-          </div>
         </div>
 
         {/* Hero Interactive Visual Dashboard */}
@@ -443,12 +430,12 @@ export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }
         </div>
       </section>
 
-      {/* Interactive Lawyer Matcher */}
+      {/* Attorney Matching — Sign-In Gate */}
       <section id="lawyers" ref={lawyerSectionRef} className="landing-section lawyer-match-section" style={{ position: 'relative', overflow: 'hidden' }}>
         {/* Postage Stamps background watermark */}
-        <img 
-          src={postageStamps} 
-          alt="Vintage stamps decoration" 
+        <img
+          src={postageStamps}
+          alt="Vintage stamps decoration"
           className="stamps-bg-img"
           style={{
             position: 'absolute',
@@ -463,112 +450,53 @@ export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }
             transition: 'opacity 0.3s ease'
           }}
         />
-        <div className="lawyer-match-config">
+
+        {/* Left panel — text (mirrors original lawyer-match-config layout) */}
+        <div className="lawyer-match-config" style={{ position: 'relative', zIndex: 1 }}>
           <div className="lawyer-match-title">
             <span className="section-tag">Verified Representation</span>
-            <h3>Find Attorneys in Your City</h3>
-            <p>
-              Match with highly specialized legal experts near you. Select your practice area and city to instantly preview matching local advocates.
+            <h3>Connect with Qualified Attorneys</h3>
+
+            <p style={{ marginBottom: '1.2rem' }}>
+              Legal Mind maintains a curated directory of verified Pakistani advocates spanning civil, family, corporate, criminal, and taxation law. Every attorney listed on our platform is bar-council registered and independently reviewed.
             </p>
-          </div>
 
-          <div className="selector-group">
-            <div className="selector-box">
-              <span className="selector-label">Legal Specialty</span>
-              <select
-                className="custom-select"
-                value={matchDomain}
-                onChange={(e) => setMatchDomain(e.target.value)}
-                disabled={isChangingLawyer}
-              >
-                <option value="Civil">Civil Law (Property, Evictions)</option>
-                <option value="Family">Family Law (Divorce, Inheritance)</option>
-                <option value="Corporate">Corporate & IT Contracts</option>
-                <option value="Criminal">Criminal defense</option>
-                <option value="Tax">Taxation & FBR filings</option>
-              </select>
-            </div>
+            <p style={{ marginBottom: '1.2rem', opacity: 0.78 }}>
+              Once you create an account, you can search and filter advocates by city — Lahore, Karachi, and Islamabad — as well as by practice area, years of experience, and client rating. Scheduling a consultation is handled entirely within the platform, keeping your case details private and secure.
+            </p>
 
-            <div className="selector-box">
-              <span className="selector-label">City</span>
-              <select
-                className="custom-select"
-                value={matchCity}
-                onChange={(e) => setMatchCity(e.target.value)}
-                disabled={isChangingLawyer}
-              >
-                <option value="Lahore">Lahore</option>
-                <option value="Karachi">Karachi</option>
-                <option value="Islamabad">Islamabad</option>
-              </select>
-            </div>
-          </div>
+            <p style={{ opacity: 0.6, fontStyle: 'italic', fontSize: '0.92rem', marginBottom: '1.8rem' }}>
+              Attorney profiles and contact details are only shown to signed-in users to protect both clients and legal professionals from unsolicited exposure.
+            </p>
 
-          <div className="matcher-pills">
-            {['Civil', 'Family', 'Corporate', 'Criminal', 'Tax'].map((domain) => (
-              <button
-                key={domain}
-                className={`matcher-pill ${matchDomain === domain ? 'active' : ''}`}
-                onClick={() => setMatchDomain(domain)}
-                disabled={isChangingLawyer}
-              >
-                {domain}
-              </button>
-            ))}
+            <button
+              className="showcase-action-btn"
+              onClick={() => scrollTo(authSectionRef)}
+            >
+              Sign Up to Browse Attorneys
+            </button>
           </div>
         </div>
 
-        {/* Lawyer Card Showcase */}
-        <div className="lawyer-showcase">
-          {isChangingLawyer ? (
-            <div className="terminal-typing" style={{ color: 'var(--color-earth-brown)' }}>
-              <span>Finding matching lawyers</span>
-              <div className="typing-dot" style={{ background: 'var(--color-earth-brown)' }}></div>
-              <div className="typing-dot" style={{ background: 'var(--color-earth-brown)' }}></div>
-              <div className="typing-dot" style={{ background: 'var(--color-earth-brown)' }}></div>
-            </div>
-          ) : (
-            <div className="showcase-card">
-              <div className="showcase-card-header">
-                <div className="showcase-avatar">
-                  {matchedLawyer.name.split(' ').slice(-1)[0][0]}
-                </div>
-                <div className="showcase-info">
-                  <h4>{matchedLawyer.name}</h4>
-                  <span className="showcase-title-lbl">High Court Advocate</span>
-                </div>
-              </div>
-
-              <div className="showcase-details">
-                <div className="detail-row">
-                  <span>Specialization:</span>
-                  <span>{matchDomain} litigation</span>
-                </div>
-                <div className="detail-row">
-                  <span>Experience:</span>
-                  <span>{matchedLawyer.exp}</span>
-                </div>
-                <div className="detail-row">
-                  <span>Cases Handled:</span>
-                  <span>{matchedLawyer.cases}+</span>
-                </div>
-                <div className="detail-row">
-                  <span>Office:</span>
-                  <span>{matchedLawyer.office}</span>
-                </div>
-                <div className="detail-row">
-                  <span>Client Rating:</span>
-                  <span className="rating-badge">
-                    ★ {matchedLawyer.rating} / 5.0
-                  </span>
-                </div>
-              </div>
-
-              <button className="showcase-action-btn" onClick={() => scrollTo(authSectionRef)}>
-                Schedule Consultation
-              </button>
-            </div>
-          )}
+        {/* Right panel — image fills exact space the lawyer cards occupied */}
+        <div className="lawyer-showcase" style={{ position: 'relative', zIndex: 1, padding: 0, overflow: 'hidden', borderRadius: '16px' }}>
+          <img
+            src={lawScaleImg}
+            alt="Scales of justice and gavel"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+              opacity: 0.52,
+              filter: 'saturate(0.65)',
+              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 18%, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 18%, rgba(0,0,0,1) 45%, rgba(0,0,0,1) 100%)',
+              transition: 'opacity 0.3s ease',
+              borderRadius: '16px',
+            }}
+          />
         </div>
       </section>
 

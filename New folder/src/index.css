@@ -1959,18 +1959,14 @@ textarea {
 .sidebar-case-item {
   border-radius: var(--radius-sm);
   background-color: rgba(225, 219, 201, 0.03);
-  /* Restored original background */
   border: 1px solid rgba(225, 219, 201, 0.08);
   color: #E1DBC9;
-  /* Text: Beige Sand */
-  /* Glow styling: Mocha Brown (#4B3A2E) at ~0.35 opacity, 25px blur, 10px spread, blended with faint Earth Brown (#5E4B3B) shadow at ~0.35 opacity */
   box-shadow:
     0 2px 4px rgba(78, 52, 46, 0.25),
-    /* Faint Earth Brown shadow for depth - reduced and updated */
     0 0 6px 1px rgba(62, 39, 35, 0.25);
-  /* Deep Mocha Brown glow - reduced and updated */
   transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
-  overflow: hidden;
+  /* overflow must NOT be hidden — it clips the accordion and toggle button */
+  overflow: visible;
   position: relative;
   height: auto;
 }
@@ -2057,17 +2053,18 @@ textarea {
 .case-summary-accordion {
   position: relative;
   background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+  transition: max-height 0.35s ease-in-out, padding 0.35s ease-in-out;
   padding: 0 12px;
 }
 
 .case-summary-accordion.expanded {
   border-top: 1px solid rgba(225, 219, 201, 0.08);
-  max-height: 500px;
+  max-height: 600px;
   padding: 12px;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .summary-title {

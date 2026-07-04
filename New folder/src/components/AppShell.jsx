@@ -27,7 +27,7 @@ export default function AppShell({
 
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [newCaseTitle, setNewCaseTitle] = useState('');
-  const [newCaseType, setNewCaseType] = useState('Civil');
+  const [newCaseType, setNewCaseType] = useState('AI');
 
   useEffect(() => {
     setExpandedCaseId(activeCaseId);
@@ -207,6 +207,8 @@ export default function AppShell({
                   onChange={(e) => setNewCaseType(e.target.value)}
                   className="sidebar-new-case-select"
                 >
+                  <option value="AI">✨ Let AI Decide</option>
+                  <option disabled>──────────────</option>
                   <option value="Civil">Civil Law</option>
                   <option value="Corporate">Corporate Law</option>
                   <option value="Family">Family Law</option>
