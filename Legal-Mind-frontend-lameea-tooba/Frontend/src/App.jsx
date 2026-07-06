@@ -233,13 +233,22 @@ export default function App() {
   };
 
   // Quick action to search for a lawyer matching the active case
-  const handleFindLawyerForCase = (caseObj) => {
+  const handleFindLawyerForCase = (caseObj, safeToShare = {}) => {
+    // DB stores the field as case_type; fallback to .type for legacy objects
+    const caseType = caseObj.case_type || caseObj.type || 'Any';
+    // AI recommends experience in safe_to_share; valid values: '1-5', '5-10', '10+'
+    const validExp = ['1-5', '5-10', '10+'];
+    const experience = validExp.includes(safeToShare.recommended_experience)
+      ? safeToShare.recommended_experience
+      : 'Any';
+
     setPrefilledFilters({
-      type: caseObj.type,
-      city: userCity || "Lahore"
+      type: caseType,
+      city: userCity || "Lahore",
+      experience,
     });
     setCurrentTab('finder');
-    triggerToast(`Applying filters for ${caseObj.type} cases in ${userCity || "Lahore"}`);
+    triggerToast(`Applying filters for ${caseType} cases in ${userCity || "Lahore"}`);
   };
 
   // Render proper screen

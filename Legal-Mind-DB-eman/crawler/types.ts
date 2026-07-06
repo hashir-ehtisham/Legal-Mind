@@ -23,6 +23,7 @@ export interface SeedSource {
     position?: string;
     linkedin?: string;
   };
+  cityHint?: string; // Default city if parsing fails (e.g. "Lahore" for LHCBA)
 }
 
 export interface ExtractedLawyer {

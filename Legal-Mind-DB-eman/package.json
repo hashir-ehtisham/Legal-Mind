@@ -9,6 +9,7 @@
     "lint": "next lint",
     "ingest-legal-docs": "tsx scripts/ingest-legal-docs.ts",
     "crawl-lawyers": "tsx scripts/crawl-lawyers.ts",
+    "seed-lawyers": "tsx scripts/seed-lawyers.ts",
     "test-gemini": "tsx lib/test-gemini.ts"
   },
   "dependencies": {

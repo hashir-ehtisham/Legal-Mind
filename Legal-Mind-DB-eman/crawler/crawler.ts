@@ -178,10 +178,14 @@ export async function startCrawler(sources: SeedSource[], maxPagesPerSource = 3)
               // Use Gemini to normalize specializations & experience years
               const geminiRes = await processProfileWithGemini(lawyer);
 
+              // Fallback to source city hint if parser resolved it as generic 'Pakistan'
+              const finalCity = (lawyer.city === 'Pakistan' && source.cityHint) ? source.cityHint : lawyer.city;
+              lawyer.city = finalCity;
+
               // Prepare DB record
               const dbRecord = {
                 name: lawyer.name,
-                city: lawyer.city,
+                city: finalCity,
                 specialization: geminiRes.specialization,
                 experience_years: geminiRes.experienceYears,
                 email: lawyer.email || null,

@@ -19,9 +19,13 @@ export async function POST(req: NextRequest) {
   let body: { caseId?: string; lawyerId?: string; finalMessage?: string; channel?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
-  const { caseId, lawyerId, finalMessage, channel } = body;
-  if (!caseId || !lawyerId || !finalMessage || !channel) {
-    return NextResponse.json({ error: 'caseId, lawyerId, finalMessage, and channel are required' }, { status: 400 });
+  const { caseId, lawyerId, finalMessage = '', channel } = body;
+  if (!caseId || !lawyerId || !channel) {
+    return NextResponse.json({ error: 'caseId, lawyerId, and channel are required' }, { status: 400 });
+  }
+  // For email, a message body is required
+  if (channel === 'email' && !finalMessage) {
+    return NextResponse.json({ error: 'finalMessage is required for email channel' }, { status: 400 });
   }
   if (!['email', 'whatsapp', 'call'].includes(channel)) {
     return NextResponse.json({ error: 'channel must be email, whatsapp, or call' }, { status: 400 });
@@ -114,15 +118,18 @@ export async function POST(req: NextRequest) {
   });
 
   // Return what the client needs for whatsapp / call fallback links
+  const cleanNumber = lawyer.whatsapp_number ? lawyer.whatsapp_number.replace(/\D/g, '') : null;
+  const whatsappUrl = cleanNumber
+    ? `https://wa.me/${cleanNumber}${finalMessage ? `?text=${encodeURIComponent(finalMessage)}` : ''}`
+    : null;
+
   return NextResponse.json({
     success: true,
     channel,
     emailSent,
     emailError,
     // Frontend uses these to open wa.me or tel: links for whatsapp/call
-    whatsappUrl: lawyer.whatsapp_number
-      ? `https://wa.me/${lawyer.whatsapp_number.replace(/\D/g, '')}`
-      : null,
+    whatsappUrl,
     phoneNumber: lawyer.whatsapp_number ?? null,
   });
 }

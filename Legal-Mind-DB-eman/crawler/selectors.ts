@@ -163,7 +163,8 @@ export const SEED_SOURCES: SeedSource[] = [
     baseUrl: 'https://lhcbar.com',
     directoryUrl: 'https://lhcbar.com/',
     profileSelector: '.member-card a, a[href*="member"]',
-    paginationSelector: '.pagination a'
+    paginationSelector: '.pagination a',
+    cityHint: 'Lahore'
   },
   {
     name: 'EasyQanoon',
@@ -177,35 +178,40 @@ export const SEED_SOURCES: SeedSource[] = [
     baseUrl: 'https://pbc.org.pk',
     directoryUrl: 'https://pbc.org.pk',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
-    paginationSelector: '.pagination a'
+    paginationSelector: '.pagination a',
+    cityHint: 'Lahore'
   },
   {
     name: 'Islamabad Bar Council',
     baseUrl: 'https://islamabadbarcouncil.org',
     directoryUrl: 'https://islamabadbarcouncil.org',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
-    paginationSelector: '.pagination a'
+    paginationSelector: '.pagination a',
+    cityHint: 'Islamabad'
   },
   {
     name: 'Sindh Bar Council',
     baseUrl: 'https://sindhbarcouncil.org',
     directoryUrl: 'https://sindhbarcouncil.org',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
-    paginationSelector: '.pagination a'
+    paginationSelector: '.pagination a',
+    cityHint: 'Karachi'
   },
   {
     name: 'Peshawar High Court Bar Association',
     baseUrl: 'https://phcba.org.pk',
     directoryUrl: 'https://phcba.org.pk',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
-    paginationSelector: '.pagination a'
+    paginationSelector: '.pagination a',
+    cityHint: 'Peshawar'
   },
   // Law Firms
   {
     name: 'Cornelius & Lane',
     baseUrl: 'https://www.cornelius.com.pk',
     directoryUrl: 'https://www.cornelius.com.pk',
-    profileSelector: '.team-member a, a[href*="team"], a[href*="people"]'
+    profileSelector: '.team-member a, a[href*="team"], a[href*="people"]',
+    cityHint: 'Lahore'
   },
   {
     name: 'Mandviwalla & Zafar',
@@ -217,7 +223,8 @@ export const SEED_SOURCES: SeedSource[] = [
     name: 'Vellani & Vellani',
     baseUrl: 'https://www.vellani.com',
     directoryUrl: 'https://www.vellani.com',
-    profileSelector: 'a[href*="people"], a[href*="team"], a[href*="professionals"]'
+    profileSelector: 'a[href*="people"], a[href*="team"], a[href*="professionals"]',
+    cityHint: 'Karachi'
   },
   {
     name: 'ABS & Co',

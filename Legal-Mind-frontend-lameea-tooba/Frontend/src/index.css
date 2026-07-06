@@ -1329,9 +1329,7 @@ textarea {
   font-weight: 700;
   margin-bottom: 4px;
   color: var(--color-earth-brown);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
 }
 
 .lawyer-exp-reputation {

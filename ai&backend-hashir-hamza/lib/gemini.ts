@@ -121,7 +121,8 @@ Part 2 (after the marker): A single JSON object with this exact shape:
   "safe_to_share": {
     "issue_type": "<brief description of legal issue>",
     "relevant_law": "<any specific law/act mentioned in excerpts, or 'not determined'>",
-    "recommended_next_step": "<one actionable step>"
+    "recommended_next_step": "<one actionable step>",
+    "recommended_experience": "<one of exactly: '1-5', '5-10', or '10+' — minimum years of lawyer experience needed based on the complexity and severity of this case>"
   },
   "do_not_share": {
     "raw_message": "<the user's exact message — never share this with lawyers>",
@@ -168,7 +169,8 @@ export async function draftOutreachMessage(
     .map(([k, v]) => `- ${k}: ${v}`)
     .join('\n');
 
-  const prompt = `You are drafting a professional Urdu/English bilingual message from a Pakistani citizen to a lawyer asking for legal assistance.
+  const prompt = `You are drafting a professional, polite, and completely English message from a Pakistani citizen to a lawyer asking for legal assistance.
+Do not include any Urdu words or translations; the message must be written entirely in English.
 
 Case Title: ${caseTitle}
 Case Type: ${caseType}
@@ -241,4 +243,69 @@ export async function generateCheckinEmail(
   });
 
   return (response.text ?? '').trim();
+}
+
+// ─── Real-Time Web Search Grounding ──────────────────────────────────────────
+export interface GroundedLawyer {
+  name: string;
+  city: string;
+  specialization: string[];
+  experience_years: number;
+  email: string | null;
+  whatsapp_number: string | null;
+  bio: string;
+  source_url: string;
+}
+
+export async function searchLawyersOnWeb(
+  city: string,
+  caseType: string,
+): Promise<GroundedLawyer[]> {
+  const prompt = `Find 5 to 8 real, active, practicing lawyers or law firms in ${city}, Pakistan who handle ${caseType} cases.
+Search the web to retrieve their actual information:
+- Name
+- City (must be ${city})
+- Specialization (array of strings, e.g. ["Family Law", "Divorce Law"])
+- Experience years (estimate based on their bar enrollment or biography, default to 5 if unknown)
+- Email address (Only return real, actual email addresses discovered on the web. Do not synthesize or invent mock email addresses. If the actual email is not found, return null.)
+- Phone or WhatsApp number (Only return real numbers. If not found, return null.)
+- A brief bio or description of their practice
+- Source URL (the webpage or directory where you found their profile)
+
+Respond with ONLY a valid JSON array of objects, no markdown:
+[
+  {
+    "name": "string",
+    "city": "string",
+    "specialization": ["string"],
+    "experience_years": number,
+    "email": "string | null",
+    "whatsapp_number": "string | null",
+    "bio": "string",
+    "source_url": "string"
+  }
+]`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const text = response.text ?? '[]';
+    try {
+      return JSON.parse(text) as GroundedLawyer[];
+    } catch {
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) return JSON.parse(match[0]) as GroundedLawyer[];
+      return [];
+    }
+  } catch (err) {
+    console.error('[gemini] Web search grounding failed:', err);
+    return [];
+  }
 }

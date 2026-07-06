@@ -84,14 +84,46 @@ export class PageParser {
     if (!website) website = extractField('website');
 
     const address = extractField('address');
+    const bio = extractField('bio');
     let city = extractField('city');
-    if (!city && address) {
-      const parts = address.split(',').map(p => p.trim());
-      if (parts.length > 0) {
-        city = parts[parts.length - 1];
+
+    const PAKISTANI_CITIES = [
+      "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Quetta", "Sialkot", "Gujranwala", "Hyderabad"
+    ];
+
+    if (!city) {
+      if (address) {
+        for (const c of PAKISTANI_CITIES) {
+          if (new RegExp(`\\b${c}\\b`, 'i').test(address)) {
+            city = c;
+            break;
+          }
+        }
+      }
+      if (!city && bio) {
+        for (const c of PAKISTANI_CITIES) {
+          if (new RegExp(`\\b${c}\\b`, 'i').test(bio)) {
+            city = c;
+            break;
+          }
+        }
+      }
+      if (!city && address) {
+        const parts = address.split(',').map(p => p.trim());
+        if (parts.length > 0) {
+          city = parts[parts.length - 1];
+        }
       }
     }
-    if (!city) city = 'Pakistan';
+
+    if (city) {
+      const match = PAKISTANI_CITIES.find(c => c.toLowerCase() === city.toLowerCase());
+      if (match) {
+        city = match;
+      }
+    } else {
+      city = 'Pakistan';
+    }
 
     const bio = extractField('bio');
     const position = extractField('position');

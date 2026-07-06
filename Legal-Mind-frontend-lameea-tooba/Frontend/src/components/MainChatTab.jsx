@@ -344,11 +344,17 @@ export default function MainChatTab({
                     <div className="find-lawyer-cta-box">
                       <div className="find-lawyer-cta-text">
                         <h5>Professional Consultation Recommended</h5>
-                        <p>Matches found for a local {activeCase.type} advocate based on your query.</p>
+                        <p>Matches found for a local {activeCase.case_type || activeCase.type} advocate based on your query.</p>
                       </div>
                       <button
                         className="btn-pine"
-                        onClick={() => onFindLawyer(activeCase)}
+                        onClick={() => {
+                          // Merge all safe_to_share entries, newest wins
+                          const merged = eventLogs.reduce((acc, log) => {
+                            return { ...acc, ...(log.safe_to_share || {}) };
+                          }, {});
+                          onFindLawyer(activeCase, merged);
+                        }}
                       >
                         Find a Lawyer for This Case
                       </button>

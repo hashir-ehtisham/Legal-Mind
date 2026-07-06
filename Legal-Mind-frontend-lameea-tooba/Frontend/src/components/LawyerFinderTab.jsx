@@ -36,6 +36,7 @@ export default function LawyerFinderTab({
     if (prefilledFilters) {
       if (prefilledFilters.type) setFilterType(prefilledFilters.type);
       if (prefilledFilters.city) setFilterCity(prefilledFilters.city);
+      if (prefilledFilters.experience) setFilterExp(prefilledFilters.experience);
       clearPrefilledFilters();
     }
   }, [prefilledFilters, clearPrefilledFilters]);
@@ -171,7 +172,12 @@ export default function LawyerFinderTab({
       console.error('[LawyerFinder] Contact failed:', err.message);
       // Fallback to direct links
       if (channel === 'whatsapp' && lawyer.whatsapp_number) {
-        window.open(`https://wa.me/${lawyer.whatsapp_number.replace('+', '')}`, '_blank');
+        const cleanNumber = lawyer.whatsapp_number.replace(/\D/g, '');
+        const msg = activeDraftLawyerId === lawyer.id && draftText ? draftText : '';
+        const url = msg
+          ? `https://wa.me/${cleanNumber}?text=${encodeURIComponent(msg)}`
+          : `https://wa.me/${cleanNumber}`;
+        window.open(url, '_blank');
       } else if (channel === 'call' && lawyer.whatsapp_number) {
         window.location.href = `tel:${lawyer.whatsapp_number}`;
       } else if (channel === 'email' && lawyer.email) {
@@ -502,14 +508,22 @@ function LawyerCard({ lawyer, isSuggested, activeDraftLawyerId, draftText, setDr
 
       <div className="lawyer-actions">
         {lawyer.email && (
-          <a href={`mailto:${lawyer.email}`} className="btn-action-icon email" onClick={() => onContact(lawyer, 'email')} style={{ textDecoration: 'none' }}>
+          <button
+            className="btn-action-icon email"
+            style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
+            onClick={() => onContact(lawyer, 'email')}
+          >
             ✉️ Email
-          </a>
+          </button>
         )}
         {lawyer.whatsapp_number && (
-          <a href={`https://wa.me/${lawyer.whatsapp_number.replace('+', '')}`} target="_blank" rel="noreferrer" className="btn-action-icon whatsapp" onClick={() => onContact(lawyer, 'whatsapp')} style={{ textDecoration: 'none' }}>
+          <button
+            className="btn-action-icon whatsapp"
+            style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
+            onClick={() => onContact(lawyer, 'whatsapp')}
+          >
             💬 WhatsApp
-          </a>
+          </button>
         )}
         {lawyer.whatsapp_number && (
           <a href={`tel:${lawyer.whatsapp_number}`} className="btn-action-icon call" onClick={() => onContact(lawyer, 'call')} style={{ textDecoration: 'none' }}>
