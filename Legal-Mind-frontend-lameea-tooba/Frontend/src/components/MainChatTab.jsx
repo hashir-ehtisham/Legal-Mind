@@ -23,6 +23,7 @@ export default function MainChatTab({
   const [messages, setMessages] = useState([]);
   const [eventLogs, setEventLogs] = useState([]);
   const [showFindLawyerCTA, setShowFindLawyerCTA] = useState(false);
+  const [isNewChatMode, setIsNewChatMode] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Load single case details whenever activeCaseId or accessToken changes
@@ -151,8 +152,8 @@ export default function MainChatTab({
     ? eventLogs.map(log => log.summary)
     : ["No event logs recorded yet. Start your consultation to populate this list."];
 
-  // Global Empty State for Chat Screen when there are no cases at all
-  if (cases.length === 0) {
+  // Global Empty State — only when no cases and user hasn't clicked "Start New Chat"
+  if (cases.length === 0 && !isNewChatMode) {
     return (
       <div className="tab-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '24px' }}>
         <div className="empty-state-container" style={{ margin: '0' }}>
@@ -165,11 +166,7 @@ export default function MainChatTab({
           </p>
           <button
             className="btn-primary"
-            onClick={() => {
-              if (onCreateCase) {
-                onCreateCase("DHA Property Demarcation Consultation", "Civil");
-              }
-            }}
+            onClick={() => setIsNewChatMode(true)}
             style={{ padding: '10px 20px', fontSize: '14px', marginTop: '12px' }}
           >
             Start a New Chat
