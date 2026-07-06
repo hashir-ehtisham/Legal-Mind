@@ -46,7 +46,7 @@ ${message}
 """`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     contents: prompt,
     config: { responseMimeType: 'application/json' },
   });
@@ -131,7 +131,7 @@ Part 2 (after the marker): A single JSON object with this exact shape:
 }`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     contents: prompt,
   });
 
@@ -164,23 +164,29 @@ export async function draftOutreachMessage(
   caseTitle: string,
   caseType: string,
   safeToShare: Record<string, string>,
+  lawyerName?: string,
 ): Promise<string> {
   const details = Object.entries(safeToShare)
     .map(([k, v]) => `- ${k}: ${v}`)
     .join('\n');
+
+  const salutation = lawyerName ? `Dear ${lawyerName},` : 'Dear Advocate,';
 
   const prompt = `You are drafting a professional, polite, and completely English message from a Pakistani citizen to a lawyer asking for legal assistance.
 Do not include any Urdu words or translations; the message must be written entirely in English.
 
 Case Title: ${caseTitle}
 Case Type: ${caseType}
+Lawyer Name: ${lawyerName ?? 'Unknown'}
 Shareable Details:
 ${details}
 
-Write a polite, professional message (150–250 words). Introduce the client, briefly describe the issue using only the details above, ask if the lawyer is available to take the case, and request a consultation. Do NOT include any personal identifiers (CNIC, home address). Sign off as "The Client".`;
+IMPORTANT: The message MUST begin with exactly: "${salutation}" — use the lawyer's real name in the salutation, do not use placeholders like [Lawyer Name].
+Write a polite, professional message (150–250 words). Introduce the client, briefly describe the issue using only the details above, ask if the lawyer is available to take the case, and request a consultation. Do NOT include any personal identifiers (CNIC, home address). Sign off as "The Client".
+`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     contents: prompt,
   });
 
@@ -215,7 +221,7 @@ Respond ONLY with a valid JSON array, no markdown:
 ]`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     contents: prompt,
     config: { responseMimeType: 'application/json' },
   });
@@ -238,7 +244,7 @@ export async function generateCheckinEmail(
   const prompt = `Write a short, warm weekly check-in email (80–120 words) from "Legal Mind" to a user named ${userName} about their case titled "${caseTitle}". Ask how the case is progressing, remind them we are here to help, and invite them to reply with any updates. Do not mention specific legal details. Sign off as "The Legal Mind Team".`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     contents: prompt,
   });
 
@@ -261,42 +267,45 @@ export async function searchLawyersOnWeb(
   city: string,
   caseType: string,
 ): Promise<GroundedLawyer[]> {
-  const prompt = `Find 5 to 8 real, active, practicing lawyers or law firms in ${city}, Pakistan who handle ${caseType} cases.
-Search the web to retrieve their actual information:
-- Name
-- City (must be ${city})
-- Specialization (array of strings, e.g. ["Family Law", "Divorce Law"])
-- Experience years (estimate based on their bar enrollment or biography, default to 5 if unknown)
-- Email address (Only return real, actual email addresses discovered on the web. Do not synthesize or invent mock email addresses. If the actual email is not found, return null.)
-- Phone or WhatsApp number (Only return real numbers. If not found, return null.)
-- A brief bio or description of their practice
-- Source URL (the webpage or directory where you found their profile)
+  const seed = Math.floor(Math.random() * 10000);
 
-Respond with ONLY a valid JSON array of objects, no markdown:
+  // Resolve official bar council sites based on region/city
+  let siteRestrictions = 'pakistanbarcouncil.com';
+  const normalizedCity = city.toLowerCase().trim();
+  if (['lahore', 'rawalpindi', 'faisalabad', 'multan', 'sialkot', 'gujranwala'].includes(normalizedCity)) {
+    siteRestrictions = 'pbbarcouncil.com or pakistanbarcouncil.com';
+  } else if (['karachi', 'hyderabad'].includes(normalizedCity)) {
+    siteRestrictions = 'sindhbarcouncil.org or pakistanbarcouncil.com';
+  } else if (normalizedCity === 'islamabad') {
+    siteRestrictions = 'iba.org.pk or ibc.org.pk or ihcba.org.pk or pakistanbarcouncil.com';
+  } else if (normalizedCity === 'peshawar') {
+    siteRestrictions = 'kpbarcouncil.com or pakistanbarcouncil.com';
+  }
+
+  const sharedPrompt = `Find 6 to 8 real, active, practicing lawyers in ${city}, Pakistan who handle ${caseType} cases.
+Prioritize profiles from these official bar council directories: ${siteRestrictions}.
+(Search seed: ${seed} — find different lawyers each time if possible.)
+
+CRITICAL RULES:
+- Every entry must be a real individual person, NOT a firm name or organisation.
+- Do NOT invent or fabricate email addresses or phone numbers — return null if unknown.
+- Do NOT repeat the same lawyer.
+
+Return ONLY a valid JSON array, no markdown, no explanation outside the JSON:
 [
   {
-    "name": "string",
-    "city": "string",
+    "name": "full name of the individual lawyer",
+    "city": "${city}",
     "specialization": ["string"],
-    "experience_years": number,
-    "email": "string | null",
-    "whatsapp_number": "string | null",
-    "bio": "string",
-    "source_url": "string"
+    "experience_years": 5,
+    "email": null,
+    "whatsapp_number": null,
+    "bio": "1-2 sentence description of their practice",
+    "source_url": "URL where this profile was found"
   }
 ]`;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        tools: [{ googleSearch: {} }],
-      },
-    });
-
-    const text = response.text ?? '[]';
+  const parseResponse = (text: string): GroundedLawyer[] => {
     try {
       return JSON.parse(text) as GroundedLawyer[];
     } catch {
@@ -304,8 +313,43 @@ Respond with ONLY a valid JSON array of objects, no markdown:
       if (match) return JSON.parse(match[0]) as GroundedLawyer[];
       return [];
     }
-  } catch (err) {
-    console.error('[gemini] Web search grounding failed:', err);
+  };
+
+  const is429 = (err: any): boolean =>
+    err?.status === 429 ||
+    (typeof err?.message === 'string' &&
+      (err.message.includes('429') || err.message.includes('RESOURCE_EXHAUSTED')));
+
+  // Attempt 1: Google Search Grounding (real-time web results)
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: sharedPrompt,
+      config: { tools: [{ googleSearch: {} }] },
+    });
+    const results = parseResponse(response.text ?? '[]');
+    if (results.length > 0) {
+      console.log(`[gemini] Grounding returned ${results.length} lawyers.`);
+      return results;
+    }
+  } catch (err: any) {
+    if (is429(err)) {
+      console.warn('[gemini] Grounding rate-limited (429), falling back to plain Gemini...');
+    } else {
+      console.error('[gemini] Grounding error:', err?.message ?? err);
+    }
+  }
+
+  // Attempt 2: Plain Gemini (training knowledge — always available, no quota issues)
+  try {
+    console.warn('[gemini] Using plain Gemini knowledge (no live grounding).');
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: sharedPrompt,
+    });
+    return parseResponse(response.text ?? '[]');
+  } catch (err: any) {
+    console.error('[gemini] Plain Gemini fallback also failed:', err?.message ?? err);
     return [];
   }
 }

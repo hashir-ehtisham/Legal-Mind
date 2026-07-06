@@ -175,6 +175,13 @@ export async function startCrawler(sources: SeedSource[], maxPagesPerSource = 3)
               const lawyer = PageParser.parseProfile(html, url, source);
               stats.profilesParsed++;
 
+              // Skip if parser rejected the name (firm names, blog pages, nav labels, etc.)
+              if (!lawyer.name || lawyer.name.trim().length < 4) {
+                console.log(`[Skip] Rejected non-person record at ${url} (name: "${lawyer.name}")`);
+                stats.profilesSkipped++;
+                return;
+              }
+
               // Use Gemini to normalize specializations & experience years
               const geminiRes = await processProfileWithGemini(lawyer);
 

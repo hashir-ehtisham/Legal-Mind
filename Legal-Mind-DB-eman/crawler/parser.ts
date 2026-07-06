@@ -52,8 +52,28 @@ export class PageParser {
     // Extract Name
     let name = extractField('name');
     if (!name) {
-      name = $('h1').first().text() || $('title').first().text() || '';
+      // Only use h1 as fallback — never use <title> because it usually has the firm/site name
+      name = $('h1').first().text() || '';
       name = this.cleanString(name).split('|')[0].split('-')[0].trim();
+    }
+
+    // Reject non-person names: firm names, nav labels, blog slugs, short strings
+    const NON_PERSON_PATTERNS = [
+      /^(blog|home|about|search|contact|not found|page not found|404|menu|team|people)$/i,
+      /&amp;|\bLLP\b|\bAssociates\b|\bLaw Firm\b|\bAdvocates\b|\bLegal\b|\bChambers\b/i,
+      /^[A-Z][a-z]+ & [A-Z][a-z]+$/, // e.g. "Vellani & Vellani"
+      /searchlawyers/i,
+      /join for/i,
+      /usefull/i,
+      /email support/i,
+    ];
+    const isNonPerson =
+      name.length < 4 ||
+      name.length > 120 ||
+      NON_PERSON_PATTERNS.some(rx => rx.test(name));
+    if (isNonPerson) {
+      // Return with empty name so caller knows to skip this record
+      name = '';
     }
 
     // Extract email from mailto
@@ -125,7 +145,6 @@ export class PageParser {
       city = 'Pakistan';
     }
 
-    const bio = extractField('bio');
     const position = extractField('position');
     const barEnrollment = extractField('barEnrollment');
     const court = extractField('court');
@@ -194,7 +213,26 @@ export class PageParser {
   static parseListingLinks(html: string, source: SeedSource): string[] {
     const $ = cheerio.load(html);
     const links: string[] = [];
-    
+
+    // URL path segments that are NOT lawyer profiles
+    const EXCLUDE_PATH_PATTERNS = [
+      /\/blog\//i,
+      /\/news\//i,
+      /\/notification/i,
+      /\/article/i,
+      /\/post\//i,
+      /\/category\//i,
+      /\/tag\//i,
+      /\/page\//i,
+      /\?p=\d+/,
+      /\/register/i,
+      /\/login/i,
+      /\/signup/i,
+      /\/about/i,
+      /\/contact/i,
+      /\d{4}\/\d{2}\/\d{2}/, // date-based blog URLs like /2025/11/15/
+    ];
+
     const selectors = [];
     if (source.profileSelector) selectors.push(source.profileSelector);
     selectors.push('a[href*="/member/"]', 'a[href*="/profile/"]', 'a[href*="/lawyer/"]', 'a[href*="/team/"]', 'a[href*="/people/"]');
@@ -205,7 +243,13 @@ export class PageParser {
         if (href) {
           try {
             const absoluteUrl = new URL(href, source.baseUrl).toString();
-            if (absoluteUrl.startsWith(source.baseUrl) && !links.includes(absoluteUrl)) {
+            // Must be same domain, not already added, and not a non-profile path
+            const isExcluded = EXCLUDE_PATH_PATTERNS.some(rx => rx.test(absoluteUrl));
+            if (
+              absoluteUrl.startsWith(source.baseUrl) &&
+              !links.includes(absoluteUrl) &&
+              !isExcluded
+            ) {
               links.push(absoluteUrl);
             }
           } catch {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Save, MapPin } from 'lucide-react';
+import { LogOut, Save, MapPin, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import nationalAssemblyLogo from '../assets/national_assembly_logo.png';
 import pakistanCodeLogo from '../assets/pakistan_code_logo.png';

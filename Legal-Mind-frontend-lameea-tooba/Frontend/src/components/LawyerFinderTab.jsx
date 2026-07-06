@@ -30,13 +30,49 @@ export default function LawyerFinderTab({
   const [draftText, setDraftText] = useState('');
   const [isDraftLoading, setIsDraftLoading] = useState(false);
   const [draftLawyerData, setDraftLawyerData] = useState(null);
+  const [searchStatus, setSearchStatus] = useState('');
 
-  // Handle prefilled filters passed from Main Chat Tab
+  // Handle prefilled filters passed from Main Chat Tab (redirected from case)
   useEffect(() => {
     if (prefilledFilters) {
       if (prefilledFilters.type) setFilterType(prefilledFilters.type);
       if (prefilledFilters.city) setFilterCity(prefilledFilters.city);
       if (prefilledFilters.experience) setFilterExp(prefilledFilters.experience);
+      
+      // Auto-trigger search immediately for the prefilled filters
+      setIsLoading(true);
+      setHasSearched(true);
+      
+      const triggerPrefilledSearch = async () => {
+        try {
+          const body = {
+            city: prefilledFilters.city || filterCity,
+            caseType: prefilledFilters.type || filterType,
+            gender: filterGender !== 'Any' ? filterGender.toLowerCase() : 'any',
+            minExperience: prefilledFilters.experience === '10+' ? 10 : prefilledFilters.experience === '5-10' ? 5 : prefilledFilters.experience === '1-5' ? 1 : 0,
+            minReputation: filterRep !== 'Any' ? parseFloat(filterRep) : 0,
+            caseId: activeCase?.id || undefined,
+          };
+          const res = await fetch('/api/lawyers/search', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(body)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setLawyers(data.lawyers || []);
+          }
+        } catch (err) {
+          console.error('[LawyerFinder] Prefilled search failed:', err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      triggerPrefilledSearch();
       clearPrefilledFilters();
     }
   }, [prefilledFilters, clearPrefilledFilters]);
@@ -47,15 +83,6 @@ export default function LawyerFinderTab({
       setFilterCity(userCity);
     }
   }, [userCity]);
-
-  // Auto-search when prefilled filters are applied
-  useEffect(() => {
-    if (prefilledFilters) return; // wait for them to be applied first
-    // Only auto-search if user has set a real filter
-    if (filterType !== 'Any' || filterCity !== 'Any') {
-      handleSearch();
-    }
-  }, [filterType, filterCity]);
 
   const handleSearch = async () => {
     if (!accessToken) {
@@ -72,6 +99,7 @@ export default function LawyerFinderTab({
     }
     setIsLoading(true);
     setHasSearched(true);
+    setSearchStatus('🔍 Searching the web for lawyers in ' + filterCity + '...');
     try {
       const body = {
         city: filterCity,
@@ -93,8 +121,10 @@ export default function LawyerFinderTab({
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      setSearchStatus('');
       setLawyers(data.lawyers || []);
     } catch (err) {
+      setSearchStatus('');
       console.error('[LawyerFinder] Search failed:', err.message);
       triggerToast('Failed to search lawyers. Please try again.');
     } finally {
@@ -118,7 +148,7 @@ export default function LawyerFinderTab({
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ caseId: activeCase.id })
+        body: JSON.stringify({ caseId: activeCase.id, lawyerName: lawyer.name })
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -160,7 +190,13 @@ export default function LawyerFinderTab({
       const data = await res.json();
 
       if (channel === 'email') {
-        triggerToast(data.emailSent ? `Email sent to ${lawyer.name}!` : `Contact saved. Email sending requires Gmail connection.`);
+        if (data.emailSent) {
+          triggerToast(`Email sent to ${lawyer.name}!`);
+        } else {
+          const subject = `Legal Assistance Inquiry — ${activeCase.title || 'General'}`;
+          window.location.href = `mailto:${lawyer.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
+          triggerToast(`Opening email client with pre-filled message...`);
+        }
       } else if (channel === 'whatsapp' && data.whatsappUrl) {
         window.open(data.whatsappUrl, '_blank');
         triggerToast(`Opening WhatsApp for ${lawyer.name}`);
@@ -181,7 +217,9 @@ export default function LawyerFinderTab({
       } else if (channel === 'call' && lawyer.whatsapp_number) {
         window.location.href = `tel:${lawyer.whatsapp_number}`;
       } else if (channel === 'email' && lawyer.email) {
-        window.location.href = `mailto:${lawyer.email}`;
+        const subject = `Legal Assistance Inquiry — ${activeCase.title || 'General'}`;
+        window.location.href = `mailto:${lawyer.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
+        triggerToast(`Opening email client...`);
       }
     }
   };
@@ -308,6 +346,11 @@ export default function LawyerFinderTab({
         {/* Loading Skeletons */}
         {isLoading && (
           <div className="lawyers-grid">
+            {searchStatus && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '12px 16px', background: 'var(--color-off-white)', border: '1px solid var(--color-border)', borderRadius: '8px', marginBottom: '8px', fontSize: '13px', color: 'var(--color-dark-pine)', fontWeight: 500 }}>
+                {searchStatus}
+              </div>
+            )}
             {[1, 2, 3].map((n) => (
               <div key={`skeleton-${n}`} className="lawyer-card skeleton-card">
                 <div className="lawyer-card-profile" style={{ display: 'flex', gap: '16px' }}>

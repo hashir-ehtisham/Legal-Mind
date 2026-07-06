@@ -14,7 +14,8 @@ export default function MainChatTab({
   accessToken,
   onCaseCreated,
   onFindLawyer,
-  onCreateCase
+  onCreateCase,
+  onEventLogsUpdate
 }) {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -56,9 +57,13 @@ export default function MainChatTab({
         time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }));
       
+      const logs = data.event_logs || [];
       setMessages(mappedChats);
-      setEventLogs(data.event_logs || []);
-      
+      setEventLogs(logs);
+
+      // Lift event logs up to App so sidebar stays in sync
+      if (onEventLogsUpdate) onEventLogsUpdate(activeCaseId, logs);
+
       // Show find lawyer CTA if case status is 'active' and conversation has begun
       setShowFindLawyerCTA(data.case?.status === 'active' && mappedChats.length >= 2);
     } catch (err) {

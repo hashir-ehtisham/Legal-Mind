@@ -153,41 +153,40 @@ export const GENERIC_SELECTORS = {
 export const SEED_SOURCES: SeedSource[] = [
   {
     name: 'Pakistan Bar Council',
-    baseUrl: 'https://www.pakistanbarcouncil.org',
-    directoryUrl: 'https://www.pakistanbarcouncil.org/index.php/members',
-    profileSelector: '.lawyer-card a, .member-card a, .profile-link',
+    baseUrl: 'https://pakistanbarcouncil.com',
+    directoryUrl: 'https://pakistanbarcouncil.com',
+    profileSelector: 'a[href*="member"], a[href*="advocate"], .profile-link',
     paginationSelector: '.pagination a, a.page-link'
   },
   {
-    name: 'Lahore High Court Bar Association',
-    baseUrl: 'https://lhcbar.com',
-    directoryUrl: 'https://lhcbar.com/',
-    profileSelector: '.member-card a, a[href*="member"]',
-    paginationSelector: '.pagination a',
-    cityHint: 'Lahore'
-  },
-  {
-    name: 'EasyQanoon',
-    baseUrl: 'https://www.easyqanoon.pk',
-    directoryUrl: 'https://www.easyqanoon.pk/',
-    profileSelector: '.lawyer-card a, a[href*="lawyer"]',
-    paginationSelector: '.pagination a'
-  },
-  {
     name: 'Punjab Bar Council',
-    baseUrl: 'https://pbc.org.pk',
-    directoryUrl: 'https://pbc.org.pk',
+    baseUrl: 'https://pbbarcouncil.com',
+    directoryUrl: 'https://pbbarcouncil.com',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
     paginationSelector: '.pagination a',
     cityHint: 'Lahore'
   },
   {
     name: 'Islamabad Bar Council',
-    baseUrl: 'https://islamabadbarcouncil.org',
-    directoryUrl: 'https://islamabadbarcouncil.org',
+    baseUrl: 'https://www.ibc.org.pk',
+    directoryUrl: 'https://www.ibc.org.pk/lawyers-verification/',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
     paginationSelector: '.pagination a',
     cityHint: 'Islamabad'
+  },
+  {
+    name: 'Islamabad Bar Association',
+    baseUrl: 'https://iba.org.pk',
+    directoryUrl: 'https://iba.org.pk/search_lawyer-typ-2-id-0.html',
+    profileSelector: 'a[href*="lawyer"], a[href*="profile"]',
+    paginationSelector: '.pagination a'
+  },
+  {
+    name: 'Islamabad High Court Bar Association',
+    baseUrl: 'https://www.ihcba.org.pk',
+    directoryUrl: 'https://www.ihcba.org.pk/search-lawyers',
+    profileSelector: 'a[href*="lawyer"], a[href*="profile"]',
+    paginationSelector: '.pagination a'
   },
   {
     name: 'Sindh Bar Council',
@@ -198,9 +197,9 @@ export const SEED_SOURCES: SeedSource[] = [
     cityHint: 'Karachi'
   },
   {
-    name: 'Peshawar High Court Bar Association',
-    baseUrl: 'https://phcba.org.pk',
-    directoryUrl: 'https://phcba.org.pk',
+    name: 'Khyber Pakhtunkhwa Bar Council',
+    baseUrl: 'https://www.kpbarcouncil.com',
+    directoryUrl: 'https://www.kpbarcouncil.com',
     profileSelector: 'a[href*="member"], a[href*="advocate"]',
     paginationSelector: '.pagination a',
     cityHint: 'Peshawar'

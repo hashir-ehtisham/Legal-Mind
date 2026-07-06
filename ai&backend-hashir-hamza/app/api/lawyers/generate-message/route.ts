@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
   if (authErr || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { caseId?: string };
+  let body: { caseId?: string; lawyerName?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
-  const { caseId } = body;
+  const { caseId, lawyerName } = body;
   if (!caseId) return NextResponse.json({ error: 'caseId is required' }, { status: 400 });
 
   // Verify case ownership and fetch case details
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       caseData.title,
       caseData.case_type ?? 'General',
       safeToShare,
+      lawyerName ?? undefined,
     );
   } catch (e) {
     console.error('[generate-message]', e);

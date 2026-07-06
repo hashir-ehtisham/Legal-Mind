@@ -17,6 +17,7 @@ export default function AppShell({
   activeCaseId,
   onSelectCase,
   chats,
+  eventLogsByCaseId,
   onCreateCase,
   darkMode,
   toggleDarkMode,
@@ -70,55 +71,12 @@ export default function AppShell({
   };
 
   const getAiSummaryForCase = (caseObj) => {
-    const caseChats = chats[caseObj.id] || [];
-    if (caseChats.length === 0) {
-      return ["No chats recorded yet.", "Start a consultation to generate event log."];
+    const logs = (eventLogsByCaseId || {})[caseObj.id] || [];
+    if (logs.length === 0) {
+      return ["No event logs yet.", "Start a consultation to generate an AI case summary."];
     }
-
-    const userMessages = caseChats.filter(m => m.sender === 'user');
-    const aiMessages = caseChats.filter(m => m.sender === 'assistant');
-
-    const events = [];
-    events.push(`Consultation started on ${caseObj.date}`);
-
-    if (userMessages.length > 0) {
-      const text = userMessages[0].text.toLowerCase();
-      let topic = "General legal query";
-      if (text.includes("dispute") || text.includes("boundary")) {
-        topic = "Property / boundary overlap dispute";
-      } else if (text.includes("contract") || text.includes("clause") || text.includes("employment")) {
-        topic = "Employment contract clause review";
-      } else if (text.includes("evict") || text.includes("tenant") || text.includes("rent")) {
-        topic = "Tenant eviction dispute";
-      } else if (text.includes("inherit") || text.includes("heir") || text.includes("family")) {
-        topic = "Inheritance property settlement";
-      }
-      events.push(`Issue: ${topic}`);
-    }
-
-    if (aiMessages.length > 0) {
-      const advice = [];
-      aiMessages.forEach(msg => {
-        const txt = msg.text.toLowerCase();
-        if (txt.includes("document") || txt.includes("record")) {
-          advice.push("Keep correspondence and receipts");
-        }
-        if (txt.includes("lawyer") || txt.includes("advocate") || txt.includes("consult")) {
-          advice.push("Consult a legal specialist");
-        }
-        if (txt.includes("nadra") || txt.includes("nikahnama")) {
-          advice.push("Gather family certs / documents");
-        }
-        if (txt.includes("secp") || txt.includes("nda")) {
-          advice.push("Verify corporate bylaws");
-        }
-      });
-      const uniqueAdvice = [...new Set(advice)];
-      uniqueAdvice.forEach(item => events.push(`Advice: ${item}`));
-    }
-
-    events.push(`Status: ${STATUS_MAP[caseObj.status] || caseObj.status}`);
-    return events;
+    // Return the real summary strings saved by the AI to the DB
+    return logs.map(log => log.summary).filter(Boolean);
   };
 
   return (
@@ -350,7 +308,7 @@ export default function AppShell({
                 onClick={() => isSidebarCollapsed && setCurrentTab('profile')}
                 style={{ cursor: isSidebarCollapsed ? 'pointer' : 'default' }}
               >
-                MH
+                {getInitials(userProfile.name)}
               </div>
             )}
             {!isSidebarCollapsed && (

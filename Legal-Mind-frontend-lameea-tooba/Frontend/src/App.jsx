@@ -44,6 +44,7 @@ export default function App() {
   const [cases, setCases] = useState([]);
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [chats, setChats] = useState({}); // Legacy for UI compat if needed, but MainChatTab will fetch its own messages
+  const [eventLogsByCaseId, setEventLogsByCaseId] = useState({});
 
   // Toast system state
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -168,6 +169,12 @@ export default function App() {
     setTimeout(() => {
       setToast({ show: false, message: "" });
     }, 3000);
+  };
+
+  // Receive event logs from MainChatTab and store them by caseId
+  const handleEventLogsUpdate = (caseId, logs) => {
+    if (!caseId || !logs) return;
+    setEventLogsByCaseId(prev => ({ ...prev, [caseId]: logs }));
   };
 
   // Save selected city
@@ -307,6 +314,7 @@ export default function App() {
             }}
             onCreateCase={handleCreateCase}
             onFindLawyer={handleFindLawyerForCase}
+            onEventLogsUpdate={handleEventLogsUpdate}
           />
         );
       case 'cases':
@@ -363,6 +371,7 @@ export default function App() {
         activeCaseId={activeCaseId}
         onSelectCase={setActiveCaseId}
         chats={chats}
+        eventLogsByCaseId={eventLogsByCaseId}
         onCreateCase={handleCreateCase}
         darkMode={darkMode}
         toggleDarkMode={() => setDarkMode(!darkMode)}
