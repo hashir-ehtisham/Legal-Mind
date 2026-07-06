@@ -68,13 +68,21 @@ export default function MainChatTab({
     }
   };
 
-  const activeCase = cases.find(c => c.id === activeCaseId) || cases[0] || {
-    id: activeCaseId,
-    title: "General Legal Consultation",
-    type: "Civil",
-    status: "Active",
-    description: "AI-guided legal inquiry."
-  };
+  const activeCase = activeCaseId
+    ? (cases.find(c => c.id === activeCaseId) || {
+        id: activeCaseId,
+        title: "General Legal Consultation",
+        type: "Civil",
+        status: "Active",
+        description: "AI-guided legal inquiry."
+      })
+    : {
+        id: null,
+        title: "General Legal Consultation",
+        type: "Civil",
+        status: "Active",
+        description: "AI-guided legal inquiry."
+      };
   const activeChats = messages;
 
   // Scroll to bottom when messages or typing status change

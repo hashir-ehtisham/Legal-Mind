@@ -251,7 +251,13 @@ export default function App() {
   }
 
   // App Shell navigation rendering
-  const activeCase = cases.find(c => c.id === activeCaseId) || cases[0];
+  const activeCase = cases.find(c => c.id === activeCaseId) || (activeCaseId === null ? {
+    id: null,
+    title: "General Legal Consultation",
+    type: "Civil",
+    status: "Active",
+    description: "AI-guided legal inquiry."
+  } : cases[0]);
 
   const renderActiveTab = () => {
     switch (currentTab) {
