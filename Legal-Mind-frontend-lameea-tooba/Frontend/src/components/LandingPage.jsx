@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Logo from './Logo';
 import './LandingPage.css';
+import { supabase } from '../lib/supabaseClient';
 
 // Import newly copied assets
 import bookBorder from '../assets/book boarder png.png';
@@ -65,6 +66,21 @@ const MOCK_LAWYERS = {
 
 export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }) {
   const [scrolled, setScrolled] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setIsSigningIn(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error('[LandingPage] OAuth error:', err.message);
+      setIsSigningIn(false);
+    }
+  };
 
   // AI Chat Sandbox state
   const [selectedPreset, setSelectedPreset] = useState(PRESETS[0]);
@@ -636,7 +652,7 @@ export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }
             {"\"Legal matters can be overwhelming, but you don't have to navigate them alone. Take a breath—we're here to guide you step-by-step with clarity, security, and peace of mind.\""}
           </p>
 
-          <button className="btn-google-landing" onClick={onLoginSuccess}>
+          <button className="btn-google-landing" onClick={handleGoogleSignIn} disabled={isSigningIn}>
             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -655,7 +671,7 @@ export default function LandingPage({ onLoginSuccess, darkMode, toggleDarkMode }
                 fill="#EA4335"
               />
             </svg>
-            <span>Sign in with Google</span>
+            <span>{isSigningIn ? 'Redirecting to Google...' : 'Sign in with Google'}</span>
           </button>
         </div>
       </section>
