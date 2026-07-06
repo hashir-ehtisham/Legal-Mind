@@ -164,10 +164,16 @@ export async function draftOutreachMessage(
   caseTitle: string,
   caseType: string,
   safeToShare: Record<string, string>,
+  history: Array<{ role: string; content: string }>,
   lawyerName?: string,
 ): Promise<string> {
   const details = Object.entries(safeToShare)
     .map(([k, v]) => `- ${k}: ${v}`)
+    .join('\n');
+
+  const historyText = history
+    .slice(-10) // last 5 turns
+    .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
     .join('\n');
 
   const salutation = lawyerName ? `Dear ${lawyerName},` : 'Dear Advocate,';
@@ -178,11 +184,19 @@ Do not include any Urdu words or translations; the message must be written entir
 Case Title: ${caseTitle}
 Case Type: ${caseType}
 Lawyer Name: ${lawyerName ?? 'Unknown'}
-Shareable Details:
-${details}
 
-IMPORTANT: The message MUST begin with exactly: "${salutation}" — use the lawyer's real name in the salutation, do not use placeholders like [Lawyer Name].
-Write a polite, professional message (150–250 words). Introduce the client, briefly describe the issue using only the details above, ask if the lawyer is available to take the case, and request a consultation. Do NOT include any personal identifiers (CNIC, home address). Sign off as "The Client".
+--- SHAREABLE LOG DETAILS ---
+${details || 'No specific structured log details available.'}
+
+--- CONVERSATION HISTORY ---
+${historyText || 'No conversation history available.'}
+
+IMPORTANT RULES:
+1. The message MUST begin with exactly: "${salutation}" — use the lawyer's real name in the salutation, do not use placeholders like [Lawyer Name].
+2. Write a polite, professional outreach message (150–250 words) from the user's perspective introducing themselves, explaining their issue based on the history and shareable details.
+3. Keep the tone professional, sincere, and completely in English.
+4. Do NOT include any highly sensitive personal identifiers (like CNIC numbers, full home addresses, bank accounts).
+5. Sign off as "The Client".
 `;
 
   const response = await ai.models.generateContent({

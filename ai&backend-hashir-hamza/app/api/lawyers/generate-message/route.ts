@@ -45,9 +45,17 @@ export async function POST(req: NextRequest) {
     Object.assign(safeToShare, log.safe_to_share ?? {});
   }
 
-  if (Object.keys(safeToShare).length === 0) {
+  // Fetch conversation messages
+  const { data: messages } = await supabase
+    .from('messages')
+    .select('role, content')
+    .eq('case_id', caseId)
+    .order('created_at', { ascending: true });
+
+  // Verify we have at least some context
+  if (Object.keys(safeToShare).length === 0 && (!messages || messages.length === 0)) {
     return NextResponse.json({
-      error: 'No safe information available yet. Continue the consultation first.',
+      error: 'No safe information or chat history available yet. Please start a consultation first.',
     }, { status: 422 });
   }
 
@@ -57,6 +65,7 @@ export async function POST(req: NextRequest) {
       caseData.title,
       caseData.case_type ?? 'General',
       safeToShare,
+      messages ?? [],
       lawyerName ?? undefined,
     );
   } catch (e) {

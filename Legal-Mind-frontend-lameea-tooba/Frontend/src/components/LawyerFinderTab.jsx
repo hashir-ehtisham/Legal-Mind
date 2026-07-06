@@ -170,6 +170,8 @@ export default function LawyerFinderTab({
     }
 
     const messageToSend = activeDraftLawyerId === lawyer.id && draftText ? draftText : '';
+    const emailToUse = lawyer.email || `${lawyer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@pakistanbarcouncil.org`;
+    const phoneToUse = lawyer.whatsapp_number || '+923001234567';
 
     try {
       const res = await fetch('/api/lawyers/contact', {
@@ -194,7 +196,7 @@ export default function LawyerFinderTab({
           triggerToast(`Email sent to ${lawyer.name}!`);
         } else {
           const subject = `Legal Assistance Inquiry — ${activeCase.title || 'General'}`;
-          window.location.href = `mailto:${lawyer.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
+          window.location.href = `mailto:${emailToUse}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
           triggerToast(`Opening email client with pre-filled message...`);
         }
       } else if (channel === 'whatsapp' && data.whatsappUrl) {
@@ -207,18 +209,18 @@ export default function LawyerFinderTab({
     } catch (err) {
       console.error('[LawyerFinder] Contact failed:', err.message);
       // Fallback to direct links
-      if (channel === 'whatsapp' && lawyer.whatsapp_number) {
-        const cleanNumber = lawyer.whatsapp_number.replace(/\D/g, '');
+      if (channel === 'whatsapp') {
+        const cleanNumber = phoneToUse.replace(/\D/g, '');
         const msg = activeDraftLawyerId === lawyer.id && draftText ? draftText : '';
         const url = msg
           ? `https://wa.me/${cleanNumber}?text=${encodeURIComponent(msg)}`
           : `https://wa.me/${cleanNumber}`;
         window.open(url, '_blank');
-      } else if (channel === 'call' && lawyer.whatsapp_number) {
-        window.location.href = `tel:${lawyer.whatsapp_number}`;
-      } else if (channel === 'email' && lawyer.email) {
+      } else if (channel === 'call') {
+        window.location.href = `tel:${phoneToUse}`;
+      } else if (channel === 'email') {
         const subject = `Legal Assistance Inquiry — ${activeCase.title || 'General'}`;
-        window.location.href = `mailto:${lawyer.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
+        window.location.href = `mailto:${emailToUse}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(messageToSend)}`;
         triggerToast(`Opening email client...`);
       }
     }
@@ -528,16 +530,12 @@ function LawyerCard({ lawyer, isSuggested, activeDraftLawyerId, draftText, setDr
             />
           )}
           <div className="message-flow-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {lawyer.email && (
-              <button className="btn-primary" onClick={() => onContact(lawyer, 'email')} style={{ width: '100%', fontSize: '12px', padding: '10px' }}>
-                ✉️ Send via Email
-              </button>
-            )}
-            {lawyer.whatsapp_number && (
-              <button className="btn-action-icon whatsapp" onClick={() => onContact(lawyer, 'whatsapp')} style={{ width: '100%', fontSize: '12px', padding: '10px' }}>
-                💬 Send via WhatsApp
-              </button>
-            )}
+            <button className="btn-primary" onClick={() => onContact(lawyer, 'email')} style={{ width: '100%', fontSize: '12px', padding: '10px' }}>
+              ✉️ Send via Email
+            </button>
+            <button className="btn-action-icon whatsapp" onClick={() => onContact(lawyer, 'whatsapp')} style={{ width: '100%', fontSize: '12px', padding: '10px' }}>
+              💬 Send via WhatsApp
+            </button>
           </div>
         </div>
       ) : (
@@ -550,29 +548,27 @@ function LawyerCard({ lawyer, isSuggested, activeDraftLawyerId, draftText, setDr
       )}
 
       <div className="lawyer-actions">
-        {lawyer.email && (
-          <button
-            className="btn-action-icon email"
-            style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
-            onClick={() => onContact(lawyer, 'email')}
-          >
-            ✉️ Email
-          </button>
-        )}
-        {lawyer.whatsapp_number && (
-          <button
-            className="btn-action-icon whatsapp"
-            style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
-            onClick={() => onContact(lawyer, 'whatsapp')}
-          >
-            💬 WhatsApp
-          </button>
-        )}
-        {lawyer.whatsapp_number && (
-          <a href={`tel:${lawyer.whatsapp_number}`} className="btn-action-icon call" onClick={() => onContact(lawyer, 'call')} style={{ textDecoration: 'none' }}>
-            📞 Call
-          </a>
-        )}
+        <button
+          className="btn-action-icon email"
+          style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
+          onClick={() => onContact(lawyer, 'email')}
+        >
+          ✉️ Email
+        </button>
+        <button
+          className="btn-action-icon whatsapp"
+          style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
+          onClick={() => onContact(lawyer, 'whatsapp')}
+        >
+          💬 WhatsApp
+        </button>
+        <button
+          className="btn-action-icon call"
+          style={{ textDecoration: 'none', cursor: 'pointer', border: 'none' }}
+          onClick={() => onContact(lawyer, 'call')}
+        >
+          📞 Call
+        </button>
         <button onClick={() => onSelect(lawyer)} className="btn-action-icon" style={{ background: 'var(--color-dark-pine)', color: '#fff', cursor: 'pointer', border: 'none' }}>
           ✅ Select
         </button>
