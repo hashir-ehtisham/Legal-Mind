@@ -201,11 +201,35 @@ export default function App() {
   };
 
   // Create new case handler (triggered on "Start a New Chat" or "New Case")
-  // Driven entirely by setting activeCaseId to null, which opens a fresh chat template.
-  const handleCreateCase = (title, type) => {
-    setActiveCaseId(null);
-    setCurrentTab('chat');
-    triggerToast("Starting a new legal consultation.");
+  const handleCreateCase = async (title, type) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch('/api/cases', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          title,
+          caseType: type === 'AI' ? null : type
+        })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      
+      // Update cases in list
+      await fetchCases();
+      
+      if (data.case?.id) {
+        setActiveCaseId(data.case.id);
+        setCurrentTab('chat');
+        triggerToast(`New case created: ${title}`);
+      }
+    } catch (err) {
+      console.error('[App] Failed to create case:', err.message);
+      triggerToast('Failed to create new case. Please try again.');
+    }
   };
 
   // Quick action to search for a lawyer matching the active case

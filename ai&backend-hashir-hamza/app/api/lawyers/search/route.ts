@@ -35,36 +35,52 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'city and caseType are required' }, { status: 400 });
   }
 
-  // Build query
-  let query = supabase
-    .from('lawyers')
-    .select(
-      'id, name, gender, city, specialization, experience_years, reputation_score, email, whatsapp_number, bio, profile_image_url, verified',
-    )
-    .ilike('city', `%${city}%`)
-    // Match caseType against any specialization in the array
-    .contains('specialization', [caseType])
-    .order('verified', { ascending: false })
-    .order('reputation_score', { ascending: false, nullsFirst: false })
-    .order('experience_years', { ascending: false, nullsFirst: false })
-    .limit(10);
+  // Build query — no specialization filter since scraped data uses "General Practice" for all.
+  // City filter: try exact match first, then skip it if results are too few.
+  const buildQuery = (filterCity: boolean) => {
+    let q = supabase
+      .from('lawyers')
+      .select(
+        'id, name, gender, city, specialization, experience_years, reputation_score, email, whatsapp_number, bio, profile_image_url, verified',
+      )
+      .order('verified', { ascending: false })
+      .order('reputation_score', { ascending: false, nullsFirst: false })
+      .order('experience_years', { ascending: false, nullsFirst: false })
+      .limit(20);
 
-  if (gender && gender !== 'any') {
-    query = query.ilike('gender', gender);
-  }
-  if (minExperience != null) {
-    query = query.gte('experience_years', minExperience);
-  }
-  if (minReputation != null) {
-    query = query.gte('reputation_score', minReputation);
-  }
+    if (filterCity) {
+      q = q.ilike('city', `%${city}%`);
+    }
+    if (gender && gender !== 'any') {
+      q = q.ilike('gender', gender);
+    }
+    if (minExperience != null && minExperience > 0) {
+      q = q.gte('experience_years', minExperience);
+    }
+    if (minReputation != null && minReputation > 0) {
+      q = q.gte('reputation_score', minReputation);
+    }
+    return q;
+  };
 
-  const { data, error } = await query;
+  // First pass: filter by city
+  let { data, error } = await buildQuery(true);
 
   if (error) {
-    console.error('[lawyers/search]', error);
+    console.error('[lawyers/search] City-filtered query failed:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
+
+  // Second pass: if no results for that city, return top lawyers regardless of city
+  if (!data || data.length === 0) {
+    const fallback = await buildQuery(false);
+    if (fallback.error) {
+      console.error('[lawyers/search] Fallback query failed:', fallback.error);
+      return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    }
+    data = fallback.data;
+  }
+
 
   // Annotate unverified lawyers so frontend can show a warning
   const lawyers = (data ?? []).map(l => ({
