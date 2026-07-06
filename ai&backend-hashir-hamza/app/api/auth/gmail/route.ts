@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGmailAuthUrl } from '@/lib/gmail';
 import { createAnonClient } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   // Verify the user is logged in via Supabase
   const authHeader = req.headers.get('authorization') ?? '';

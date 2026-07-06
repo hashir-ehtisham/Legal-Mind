@@ -7,6 +7,8 @@ import { exchangeCodeForTokens } from '@/lib/gmail';
 import { encrypt } from '@/lib/crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export async function GET(req: NextRequest) {
